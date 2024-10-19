@@ -1,0 +1,115 @@
+from ferramentas import separar_valores
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import win32com.client as win32
+from time import sleep
+import time
+import pandas as pd
+from dataframe_image import export
+
+
+for c in range(0, 10):
+
+    inicio = time.time()
+
+    # Urls - Scarecrown, Woody the Beaver, Rock Golem, Tunnel Mole, Rocky the Mole, Nugget, Rooster, Woody Nimphy, Heart of Davy Jones, Gnome, Squirrel Monkey, Farm Dog, Ayam Cemami, Cabbage Boy, Black Bearry, El Pollo Veloz, Cabbage Girl, Sir Goldensnout, Maximus, Freya Fox, Knowledge Crab, Queen Bee
+    urls = ['https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/404', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/415', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/427', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/428', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/429', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/430', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/613', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/436', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/450', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/407', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/443', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/406', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/445', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/434', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/444', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/470', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/435', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/466', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/459', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/469', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/480', 'https://opensea.io/assets/matic/0x22d5f9b75c524fec1d6619787e582644cd4d7422/491']
+    nft_val = {'Scarecrown': [],
+               'Woody the Beaver': [],
+               'Rock Golem': [],
+               'Tunnel Mole': [],
+               'Rocky the Mole': [],
+               'Nugget':  [],
+               'Rooster': [],
+               'Woody Nimphy': [],
+               'Heart of Davy Jones': [],
+               'Gnome': [],
+               'Squirrel Monkey': [],
+               'Farm Dog': [],
+               'Ayam Cemami': [],
+               'Cabbage Boy': [],
+               'Black Bearry': [],
+               'El Pollo Veloz': [],
+               'Cabbage Girl': [],
+               'Sir Goldensnout': [],
+               'Maximus': [],
+               'Freya Fox': [],
+               'Knowledge Crab': [],
+               'Queen Bee': []
+    }
+
+    ############ EXTRAINDO INFORMAÇÕES DAS URLs #############
+    cont = 0
+
+    for url in urls:
+        # Entrando no site
+        driver = webdriver.Chrome()
+        driver.get(url)
+        sleep(10)
+
+        while True:
+            elementos = driver.find_elements(By.XPATH, '//div[@class="sc-8a40caf7-0 bikGyd Price--main"]')
+            if len(elementos) == 0:
+                driver.quit()
+                sleep(5)
+                driver = webdriver.Chrome()
+                driver.get(url)
+                sleep(10)
+            else:
+                break
+
+        # Extrair Valores
+        for elemento in elementos:
+            nft_val[list(nft_val.keys())[cont]].append(elemento.text)
+
+        cont += 1
+
+        # Fechar Navegador
+        driver.quit()
+        sleep(5)
+
+    for c in nft_val:
+        print(f'{c} = {nft_val[c]}')
+
+    fim = time.time()
+
+    print(f'Tempo de execução: {fim-inicio} segundos.')
+
+    ############ SEPARANDO OFERTAS E VENDAS DOS NFTs ##########
+
+    ofertas_vendas_nfts = []
+    for nft in nft_val:
+        ofertas_vendas_nfts.append(separar_valores(nft, nft_val[nft]))
+
+    ########### ESTILIZANDO & EXPORTANDO O DATAFRAME DOS NFTs #############
+
+    df = pd.DataFrame(ofertas_vendas_nfts)
+    styled_df = df.style.background_gradient()
+    export(styled_df, 'dataframe.png')
+
+    ############ ENVIANDO INFORMAÇÕES PARA O EMAIL ############
+
+    anexo_df_png = r"C:\Users\brsan\PycharmProjects\Automação_CNPJ\dataframe.png"
+
+    outlook = win32.Dispatch("outlook.application")
+
+    email = outlook.CreateItem(0)
+
+    email.To = "bruninho_123vini@hotmail.com"
+    email.Subject = "Informe NFTs"
+    email.Body = f'''
+    {ofertas_vendas_nfts}
+    '''
+    email.Attachments.Add(anexo_df_png)
+    email.Send()
+
+
+
+
+
+
+
+
+
+
+
