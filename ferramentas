@@ -1,0 +1,56 @@
+def converter(preco, moeda): # FERRAMENTA CONSISTE EM CONVERTER AS CRIPTOS SELECIONADAS PARA DOLAR
+    # Biblioteca Yahoo Finance
+    import yfinance as yf
+
+    if moeda == 'POL':
+        # Pegando cotação da Polygon
+        matic = yf.download('MATIC-USD', period='1d')
+        pol = list(matic['Close'])[0]
+        return round(pol * preco, 2)
+
+    elif moeda == 'ETH':
+        # Pegando cotação da Ethereum
+        ethereum = yf.download('ETH-USD', period='1d')
+        eth = list(ethereum['Close'])[0]
+        return round(eth * preco, 2)
+
+    elif 'U' in moeda:
+        return preco
+
+
+
+def separar_valores(nft, valores): # FERRAMENTA CONSISTE EM SEPARAR OS VALORES OFERTADOS E VENDIDOS DAS NFTs
+
+    # Lista das Vendas
+    vendas = []
+    # Lista das Ofertas
+    ofertas = []
+    # Ativador Ofertas
+    cont = 0
+
+    # Laço dos Valores do NFT
+    for valor in valores:
+        valor_atual_convertido = converter(float(valor.split()[0].replace(',', '.')), valor.split()[1])
+
+        valor_anterior = valores[valores.index(valor)-1]
+        valor_anterior_convertido = converter(float(valor_anterior.split()[0].replace(',', '.')), valor_anterior.split()[1])
+
+        if valor_atual_convertido < valor_anterior_convertido:
+            cont = 1
+            ofertas.append(valor_atual_convertido)
+
+        elif valor_atual_convertido >= valor_anterior_convertido:
+            if cont == 1:
+                ofertas.append(valor_atual_convertido)
+            else:
+                vendas.append(valor_atual_convertido)
+
+    return f'''NFT: {nft}, Vendas: {vendas[0]}, Ofertas: {ofertas[0]}'''
+
+
+
+
+
+
+
+
