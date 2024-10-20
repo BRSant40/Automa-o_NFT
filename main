@@ -89,13 +89,13 @@ for c in range(0, 10):
 
     ############ ENVIANDO INFORMAÇÕES PARA O EMAIL ############
 
-    anexo_df_png = r"C:\Users\brsan\PycharmProjects\Automação_CNPJ\dataframe.png"
+    anexo_df_png = r"C:...dataframe.png" # COMPLETAR COM O CAMINHO CORRETO!
 
     outlook = win32.Dispatch("outlook.application")
 
     email = outlook.CreateItem(0)
 
-    email.To = "bruninho_123vini@hotmail.com"
+    email.To = "exemplodeemail_gmail.com"
     email.Subject = "Informe NFTs"
     email.Body = f'''
     {ofertas_vendas_nfts}
